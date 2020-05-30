@@ -122,7 +122,7 @@ int main(int argc,char **argv)
 
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
 
-#if 0
+#if 1
   PetscObjectSetName((PetscObject)x,"temp");
   PetscViewer viewer;
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"./temp.h5",
