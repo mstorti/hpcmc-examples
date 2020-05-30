@@ -1,0 +1,8 @@
+#!/usr/bin/bash
+#SBATCH --ntasks=6 --ntasks-per-node=6 -t 1
+
+# Export paths here if necessary or recommended.
+
+DIRE=/u/guest04/mstorti
+cd $DIRE
+/usr/lib64/mpich2/bin/mpiexec $DIRE/ex23.bin -n 100

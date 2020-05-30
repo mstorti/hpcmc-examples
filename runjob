@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+#SBATCH --ntasks=18 --ntasks-per-node=6 -t 1
+
+# Export paths here if necessary or recommended.
+export PATH="/usr/lib64/mpich2/bin":$PATH
+export LD_LIBRARY_PATH="/usr/lib64/mpich2/lib":$LD_LIBRARY_PATH
+
+# Load environment if this script is run directly.
+if test "$CS_ENVIRONMENT_SET" != "true" ; then
+  module purge
+fi
+
+DIRE=/u/guest04/mstorti
+cd $DIRE
+/usr/lib64/mpich2/bin/mpiexec $DIRE/hello.bin
