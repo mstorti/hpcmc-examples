@@ -1,5 +1,4 @@
-default: snes2.bin
-
+default: hornere.bin
 
 ifeq ($(HOSTNAME),urubu)
 PETSC_DIR := $(HOME)/SOFT/petsc-3.2-p7
@@ -12,6 +11,7 @@ include ${PETSC_DIR}/conf/rules
 
 COPTFLAGS := -O2 -funroll-loops
 LDPRE := LD_PRELOAD=$(HOME)/SOFT/hdf5-1814/lib/libhdf5.so
+EIGEN := -I/usr/include/eigen3
 
 ex1.bin: ex1.cpp
 	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES) -o $@ $^ $(PETSC_LIB)
@@ -27,6 +27,9 @@ poisson.bin: poisson.cpp
 
 snes2.bin: snes2.cpp
 	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES) -o $@ $^ $(PETSC_LIB)
+
+hornere.bin: hornere.cpp
+	g++ -fopenmp -o $@ $^ $(EIGEN)
 
 lclean:
 	shopt -s nullglob ; rm slurm* *~ *.bin
