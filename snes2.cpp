@@ -4,6 +4,7 @@ static char help[] =
 #include <vector>
 #include <cstdlib>
 #include "petscsnes.h"
+#include "H5Cpp.h"
 
 using namespace std;
 
@@ -66,6 +67,22 @@ void vec_gather(MPI_Comm comm,Vec v,vector<double> &values) {
   VecRestoreArray(v,&vp);
 }
 
+//---:---<*>---:---<*>---:---<*>---:---<*>---:---<*>
+int h5petsc_vec_save(Vec x,const char *filename,const char *varname) {
+  vector<double> vx;
+  vec_gather(PETSC_COMM_WORLD,x,vx);
+  H5::H5File file(filename,H5F_ACC_TRUNC);
+  hsize_t n = vx.size();
+  H5::DataSpace dataspace(1,&n);
+  // Create the dataset.
+  string svar(varname);
+  H5::DataSet xdset =
+    file.createDataSet(svar,H5::PredType::NATIVE_DOUBLE,dataspace);
+  xdset.write(vx.data(),H5::PredType::NATIVE_DOUBLE);
+  file.close();
+  return 0;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -122,14 +139,19 @@ int main(int argc,char **argv)
 
   ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
 
-#if 1
+#if 0
+  // Doesn't work
   PetscObjectSetName((PetscObject)x,"temp");
   PetscViewer viewer;
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"./temp.h5",
 			     FILE_MODE_WRITE,&viewer); CHKERRQ(ierr);
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+#elif 1
+  // Use the function defined above
+  h5petsc_vec_save(x,"temp.h5","u");
 #else
+  // Just plain output to stdout
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 #endif
   

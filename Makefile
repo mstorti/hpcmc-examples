@@ -4,6 +4,7 @@ ifeq ($(HOSTNAME),urubu)
 PETSC_DIR := $(HOME)/SOFT/petsc-3.2-p7
 else
 PETSC_DIR := $(HOME)/PETSC/petsc-3.2-p7
+HDF5 := $(HOME)/SOFT/hdf5-1814
 endif
 PETSC_ARCH := linux-gnu-O
 include ${PETSC_DIR}/conf/variables
@@ -26,7 +27,9 @@ poisson.bin: poisson.cpp
 	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES) -o $@ $^ $(PETSC_LIB)
 
 snes2.bin: snes2.cpp
-	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES) -o $@ $^ $(PETSC_LIB)
+	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES)		\
+		-o $@ $^ -L$(HDF5)/lib  -Wl,-rpath,$(HDF5)/lib		\
+		-lhdf5 -lhdf5_cpp -lhdf5_f90cstub  $(PETSC_LIB)  
 
 hornere.bin: hornere.cpp
 	g++ -fopenmp -o $@ $^ $(EIGEN)
