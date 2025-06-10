@@ -42,21 +42,16 @@ snes2v.bin: snes2v.cpp
 		-o $@ $^ -L$(HDF5)/lib  -Wl,-rpath,$(HDF5)/lib		\
 		-lhdf5 -lhdf5_cpp -lhdf5_f90cstub  $(PETSC_LIB)  
 
-snes2v.bin: snes2v.cpp
-	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES)			\
-		-o $@ $^ -L$(HDF5)/lib  -Wl,-rpath,$(HDF5)/lib		\
-		-lhdf5 -lhdf5_cpp -lhdf5_fortran  $(PETSC_LIB)  
-
-snes2v.bin: snes2v.cpp
-	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES)		\
-		-o $@ $^ -L$(HDF5)/lib  -Wl,-rpath,$(HDF5)/lib		\
-		-lhdf5 -lhdf5_cpp -lhdf5_fortran  $(PETSC_LIB)  
-
 hornere.bin: hornere.cpp
 	g++ -fopenmp -o $@ $^ $(EIGEN)
 
-lclean:
-	shopt -s nullglob ; rm slurm* *~ *.bin
-
 run:
 	$(LDPRE) mpiexec -n 1 snes2.bin -n 200
+
+#w Describe targets
+what:
+	@makewhat.pl -s Makefile
+
+#w Remove all bins
+lclean:
+	shopt -s nullglob ; rm slurm* *~ *.bin
