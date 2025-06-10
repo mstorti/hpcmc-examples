@@ -170,6 +170,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 
+  PetscLogView(PETSC_VIEWER_STDOUT_WORLD);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
