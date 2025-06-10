@@ -1,7 +1,8 @@
-default: hornere.bin
+default: snes2.bin
 
 ifeq ($(HOSTNAME),urubu)
 PETSC_DIR := $(HOME)/SOFT/petsc-3.2-p7
+HDF5 := $(HOME)/SOFT/hdf5-1814
 else
 PETSC_DIR := $(HOME)/PETSC/petsc-3.2-p7
 HDF5 := $(HOME)/SOFT/hdf5-1814
@@ -27,7 +28,12 @@ poisson.bin: poisson.cpp
 	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES) -o $@ $^ $(PETSC_LIB)
 
 snes2.bin: snes2.cpp
-	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES)		\
+	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES)			\
+		-o $@ $^ -L$(HDF5)/lib  -Wl,-rpath,$(HDF5)/lib		\
+		-lhdf5 -lhdf5_cpp -lhdf5_f90cstub  $(PETSC_LIB)  
+
+snes2v.bin: snes2v.cpp
+	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES)			\
 		-o $@ $^ -L$(HDF5)/lib  -Wl,-rpath,$(HDF5)/lib		\
 		-lhdf5 -lhdf5_cpp -lhdf5_f90cstub  $(PETSC_LIB)  
 
