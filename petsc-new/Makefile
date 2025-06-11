@@ -22,8 +22,7 @@ EIGEN := -I/usr/include/eigen3
 
 $(PROG).bin: $(PROG).cpp
 	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES)			\
-		-o $@ $^ -L$(HDF5)/lib  -Wl,-rpath,$(HDF5)/lib		\
-		-lhdf5 -lhdf5_cpp $(PETSC_LIB)  
+		-o $@ $^ -lhdf5 -lhdf5_cpp $(PETSC_LIB)  
 
 run:
 	$(LDPRE) mpiexec -n 1 snes2.bin -n 200
