@@ -54,4 +54,4 @@ what:
 
 #w Remove all bins
 lclean:
-	shopt -s nullglob ; rm slurm* *~ *.bin
+	shopt -s nullglob ; rm -f slurm* *~ *.bin
