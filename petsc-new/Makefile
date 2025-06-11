@@ -2,7 +2,11 @@
 PROG := snes2
 default: $(PROG).bin
 
+ifeq ($(HOSTNAME),urubu)
 PUB:=/share/storage/pub/mstorti
+else ifeq ($(HOSTNAME),pirayu)
+PUB:=/home/pub/mstorti
+endif
 PETSC_DIR := $(PUB)/petsc-3.23.2
 PETSC_ARCH := linux-gnu-O
 # include ${PETSC_DIR}/conf/variables
@@ -31,3 +35,9 @@ what:
 #w Remove all bins
 lclean:
 	shopt -s nullglob ; rm -f slurm* *~ *.bin
+
+#w Export to ZIP file
+export:
+	rrm -rf snes2 ; mkdir snes2
+	cp Makefile snes2.cpp snes2
+	zip -r snes2.zip snes2
