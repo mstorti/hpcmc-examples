@@ -38,5 +38,6 @@ lclean:
 #w Export to ZIP file
 zip:
 	rrm -rf snes2 ; mkdir snes2
+	gdr >> snes2/VERSION
 	cp Makefile snes2.cpp snes2
 	zip -r snes2.zip snes2
