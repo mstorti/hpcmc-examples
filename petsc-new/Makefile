@@ -15,7 +15,7 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
 ## COPTFLAGS := -O2 -funroll-loops
-COPTFLAGS := -O0 -g3 -ggdb3 
+COPTFLAGS := -g3 -ggdb3 
 ## LDPRE := LD_PRELOAD=$(HOME)/SOFT/hdf5-1814/lib/libhdf5.so
 LDPRE := LD_LIBRARY_PATH=$(HOME)/SOFT/hdf5-1814/lib
 EIGEN := -I/usr/include/eigen3
@@ -37,7 +37,7 @@ lclean:
 	shopt -s nullglob ; rm -f slurm* *~ *.bin
 
 #w Export to ZIP file
-export:
+zip:
 	rrm -rf snes2 ; mkdir snes2
 	cp Makefile snes2.cpp snes2
 	zip -r snes2.zip snes2
