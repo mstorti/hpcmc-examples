@@ -1,116 +1,33 @@
-# -*- mode: makefile -*-
-default: doit
+## PROG := ex1b
+PROG := snes2
+default: $(PROG).bin
 
-## Para que tome PETSc 3.7.4
-PETSC_DIR := /home/mstorti/PETSC/petsc-3.19.2
+PUB:=/share/storage/pub/mstorti
+PETSC_DIR := $(PUB)/petsc-3.23.2
 PETSC_ARCH := linux-gnu-O
+# include ${PETSC_DIR}/conf/variables
+# include ${PETSC_DIR}/conf/rules
+include ${PETSC_DIR}/lib/petsc/conf/variables
+include ${PETSC_DIR}/lib/petsc/conf/rules
 
-#  This sample GNU Makefile can be used to compile PETSc applications
-#  It relies on pkg_config tool (see $PETSC_DIR/share/petsc/Makefile.basic.user if you cannot use pkg_config)
-#  Copy this file to your source directory as "Makefile" and modify as needed.
-#  You must set the environmental variable(s) PETSC_DIR (and PETSC_ARCH if PETSc was not configured with the --prefix option)
-#  See also share/petsc/Makefile.basic.user for a makefile that does not require pkg_config
-#
-#  For example - a single source file (ex1.c or ex1.F90) can be compiled with:
-#
-#      make ex1
-#
-#  You do not need to edit this makefile at all.
-#
-#  For a multi-file case, suppose you have the source files a.c, b.c, and c.cxx
-#  This can be built by uncommenting the following two lines.
-#
-# app : a.o b.o c.o
-# 	$(LINK.C) -o $@ $^ $(LDLIBS)
-#
-#  When linking in a multi-files with Fortran source files a.F90, b.c, and c.cxx
-#  You may need to use
-#
-# app : a.o b.o c.o
-# 	$(LINK.F) -o $@ $^ $(LDLIBS)
+## COPTFLAGS := -O2 -funroll-loops
+COPTFLAGS := -O0 -g3 -ggdb3 
+## LDPRE := LD_PRELOAD=$(HOME)/SOFT/hdf5-1814/lib/libhdf5.so
+LDPRE := LD_LIBRARY_PATH=$(HOME)/SOFT/hdf5-1814/lib
+EIGEN := -I/usr/include/eigen3
 
-#  If the file c.cxx needs to link with a C++ standard library -lstdc++ , then
-#  you'll need to add it explicitly.  It can go in the rule above or be added to
-#  a target-specific variable by uncommenting the line below.
-#
-# app : LDLIBS += -lstdc++
-#
-#  The following variable must either be a path to petsc.pc or just "petsc" if petsc.pc
-#  has been installed to a system location or can be found in PKG_CONFIG_PATH.
-petsc.pc := $(PETSC_DIR)/$(PETSC_ARCH)/lib/pkgconfig/petsc.pc
+$(PROG).bin: $(PROG).cpp
+	mpicxx $(COPTFLAGS) $(PETSC_CC_INCLUDES)			\
+		-o $@ $^ -L$(HDF5)/lib  -Wl,-rpath,$(HDF5)/lib		\
+		-lhdf5 -lhdf5_cpp $(PETSC_LIB)  
 
-# Additional libraries that support pkg-config can be added to the list of PACKAGES below.
-PACKAGES := $(petsc.pc)
+run:
+	$(LDPRE) mpiexec -n 1 snes2.bin -n 200
 
-CC := $(shell pkg-config --variable=ccompiler $(PACKAGES))
-CXX := $(shell pkg-config --variable=cxxcompiler $(PACKAGES))
-FC := $(shell pkg-config --variable=fcompiler $(PACKAGES))
-CFLAGS_OTHER := $(shell pkg-config --cflags-only-other $(PACKAGES))
-CFLAGS := $(shell pkg-config --variable=cflags_extra $(PACKAGES)) $(CFLAGS_OTHER)
-CXXFLAGS := $(shell pkg-config --variable=cxxflags_extra $(PACKAGES)) $(CFLAGS_OTHER)
-FFLAGS := $(shell pkg-config --variable=fflags_extra $(PACKAGES))
-CPPFLAGS := $(shell pkg-config --cflags-only-I $(PACKAGES))
-LDFLAGS := $(shell pkg-config --libs-only-L --libs-only-other $(PACKAGES))
-LDFLAGS += $(patsubst -L%, $(shell pkg-config --variable=ldflag_rpath $(PACKAGES))%, $(shell pkg-config --libs-only-L $(PACKAGES)))
-LDLIBS := $(shell pkg-config --libs-only-l $(PACKAGES)) -lm
-CUDAC := $(shell pkg-config --variable=cudacompiler $(PACKAGES))
-CUDAC_FLAGS := $(shell pkg-config --variable=cudaflags_extra $(PACKAGES))
-CUDA_LIB := $(shell pkg-config --variable=cudalib $(PACKAGES))
-CUDA_INCLUDE := $(shell pkg-config --variable=cudainclude $(PACKAGES))
+#w Describe targets
+what:
+	@makewhat.pl -s Makefile
 
-CFLAGS := -g3 -ggdb -O0 -fpermissive
-CXXFLAGS := $(CFLAGS)
-
-print:
-	@echo CC=$(CC)
-	@echo CXX=$(CXX)
-	@echo FC=$(FC)
-	@echo CFLAGS=$(CFLAGS)
-	@echo CXXFLAGS=$(CXXFLAGS)
-	@echo FFLAGS=$(FFLAGS)
-	@echo CPPFLAGS=$(CPPFLAGS)
-	@echo LDFLAGS=$(LDFLAGS)
-	@echo LDLIBS=$(LDLIBS)
-	@echo CUDAC=$(CUDAC)
-	@echo CUDAC_FLAGS=$(CUDAC_FLAGS)
-	@echo CUDA_LIB=$(CUDA_LIB)
-	@echo CUDA_INCLUDE=$(CUDA_INCLUDE)
-
-# Many suffixes are covered by implicit rules, but you may need to write custom rules
-# such as these if you use suffixes that do not have implicit rules.
-# https://www.gnu.org/software/make/manual/html_node/Catalogue-of-Rules.html#Catalogue-of-Rules
-% : %.F90
-	$(LINK.F) -o $@ $^ $(LDLIBS)
-%.o: %.F90
-	$(COMPILE.F) $(OUTPUT_OPTION) $<
-
-% : %.cxx
-	$(LINK.cc) -o $@ $^ $(LDLIBS)
-
-% : %.cpp
-	$(LINK.cc) -o $@ $^ $(LDLIBS) -I/home/mstorti/SOFT/hdf5-1814/include -L/home/mstorti/SOFT/hdf5-1814/lib -lhdf5_hl_cpp -lhdf5_cpp -lhdf5_hl -lhdf5 -L/home/mstorti/SOFT/hdf5-1814/lib -Wl,-rpath -Wl,/home/mstorti/SOFT/hdf5-1814/lib
-
-%.o: %.cxx
-	$(COMPILE.cc) $(OUTPUT_OPTION) $<
-%.o : %.cu
-	$(CUDAC) -c $(CPPFLAGS) $(CUDAC_FLAGS) $(CUDA_INCLUDE) -o $@ $<
-
-clean:
-	rm -rf tempo*.h5
-
-## PROG := snes2
-PROG := ex1new
-
-doit:
-	rm -rf $(PROG) STEPS
-	mkdir STEPS
-	$(MAKE) $(PROG)
-	./$(PROG)
-
-export:
-	rm -rf gtp9snes
-	mkdir gtp9snes
-	cp Makefile snes2.cpp gtp9snes
-	zip -r gtp9snes.zip gtp9snes
-	rm -rf gtp9snes
-
+#w Remove all bins
+lclean:
+	shopt -s nullglob ; rm -f slurm* *~ *.bin

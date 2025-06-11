@@ -60,13 +60,13 @@ void vec_gather(MPI_Comm comm,Vec v,vector<double> &values) {
     displs[j] = displs[j-1] + counts[j-1];
 
   // Get the internal values of the PETSc vector
-  double *vp;
-  VecGetArray(v,&vp);
+  const double *vp;
+  VecGetArrayRead(v,&vp);
   // Do the Allgatherv to the local vector
   MPI_Allgatherv(vp,nlocal,MPI_DOUBLE,
                  &values[0],&counts[0],&displs[0],MPI_DOUBLE,comm);
   // Restore the array
-  VecRestoreArray(v,&vp);
+  VecRestoreArrayRead(v,&vp);
 }
 
 #if 1
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
   double  abstol, rtol, stol;
   int maxit, maxf;
   SNESGetTolerances(snes,&abstol,&rtol,&stol,&maxit,&maxf);
-  PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%D, maxf=%D\n",
+  PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
               (double)abstol,(double)rtol,(double)stol,maxit,maxf);
 
   // Create matrix and vector data structures;
@@ -230,11 +230,12 @@ int resfun(SNES snes,Vec x,Vec f,void *data)
 #undef __FUNCT__
 #define __FUNCT__ "jacfun"
 int jacfun(SNES snes,Vec x,Mat jac,Mat jac1,void *data) {
-  double *xx, A;
+  double A;
+  const double *xx;
   SnesCtx &ctx = *(SnesCtx *)data;
   int ierr, j;
 
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
   ierr = MatZeroEntries(jac);
 
   j=0; A = 1;
@@ -267,6 +268,6 @@ int jacfun(SNES snes,Vec x,Mat jac,Mat jac1,void *data) {
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   // ierr = MatView(jac,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
   // printf("en jacfun\n");
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
   return 0;
 }
